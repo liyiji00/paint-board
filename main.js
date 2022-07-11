@@ -1,3 +1,12 @@
+const drawModeSelect = document.querySelector('select[name="drawMode"]')
+const range          = document.querySelector('input[type="range"]')
+const color          = document.querySelector('input[type="color"]')
+const fillButton     = document.querySelector('#isfill')
+const svg            = document.querySelector('svg')
+const clearButton    = document.querySelector('#clear')
+const saveButton     = document.querySelector('#save')
+const info           = document.querySelector('#info')
+
 // 关闭窗口时检测是否有未保存的图像
 window.onbeforeunload = () => {
   if (pen.drawed) {
@@ -5,55 +14,48 @@ window.onbeforeunload = () => {
   }
 }
 
-const drawModeSelect = document.querySelector('select[name="drawMode"]')
 drawModeSelect.addEventListener('change', e => {
   pen.drawMode = drawModeSelect.value
 })
 
-const range = document.querySelector('input[type="range"]')
 range.addEventListener('input', e => {
   pen.penSize = e.target.value
   document.querySelector('#penSizeText')
-    .innerHTML = `${pen.penSize}px`
+  .innerHTML = `${pen.penSize}px`
 })
 
-const color = document.querySelector('input[type="color"]')
 color.addEventListener('input', e => {
   pen.color = e.target.value
 })
 
-const fillButton = document.querySelector('#isfill')
 fillButton.addEventListener('click', e => {
   pen.fill = e.target.checked ? pen.color : 'none'
 })
 
-const clearButton = document.querySelector('#clear')
 clearButton.addEventListener('click', e => {
   pen.node = null
   pen.XY = null
   pen.isDrawing = false
   pen.drawed = false
   svg.innerHTML = ''
+  info.style.display = ''
 })
 
-const saveButton = document.querySelector('#save')
 saveButton.addEventListener('click', e => {
   if (pen.drawed) {
-    let blob = new Blob(
+    const blob = new Blob(
       [svg.outerHTML], {
         type: 'image/svg+xml'
       }
     )
-    let link = URL.createObjectURL(blob)
-    let a = document.createElement('a')
+    const link = URL.createObjectURL(blob)
+    const a = document.createElement('a')
     a.setAttribute('href', link)
-    a.download = 'paintboard.svg'
+    a.download = 'paint-board.svg'
     a.click()
     pen.drawed = false
   }
 })
-
-const info = document.querySelector('#info')
 
 const pen = {
   color: color.value,
@@ -71,12 +73,11 @@ const pen = {
   drawed: false, // 是否已经绘制过
 }
 
-let svgNodes = []
-
+const svgNodes = []
 window.addEventListener('keydown', e => {
   // 撤销
   if (e.code === 'KeyZ' && e.ctrlKey) {
-    if (pen.isDrawing == false) {
+    if (pen.isDrawing === false) {
       if (svg.lastChild) {
         svgNodes.push(svg.lastChild)
         svg.removeChild(svg.lastChild)
@@ -85,7 +86,7 @@ window.addEventListener('keydown', e => {
   }
   // 还原
   if (e.code === 'KeyY' && e.ctrlKey) {
-    if (pen.isDrawing == false) {
+    if (pen.isDrawing === false) {
       if (svgNodes.length > 0) {
         svg.appendChild(svgNodes.pop())
       }
@@ -93,7 +94,6 @@ window.addEventListener('keydown', e => {
   }
 })
 
-const svg = document.querySelector('svg')
 // 移除右键菜单
 svg.oncontextmenu = () => {
   return false
@@ -107,7 +107,7 @@ svg.addEventListener('mousedown', e => {
     pen.XY = getMouseXY(svg)
     switch (pen.drawMode) {
       case 'curve':
-        pen.node = creatSVGElt('path', {
+        pen.node = createSVGElt('path', {
           d: `M ${pen.XY.x} ${pen.XY.y} L ${pen.XY.x} ${pen.XY.y}`,
           stroke: pen.color,
           'stroke-width': pen.penSize,
@@ -117,7 +117,7 @@ svg.addEventListener('mousedown', e => {
         svg.appendChild(pen.node)
         break
       case 'line':
-        pen.node = creatSVGElt('line', {
+        pen.node = createSVGElt('line', {
           x1: pen.XY.x,
           y1: pen.XY.y,
           x2: pen.XY.x,
@@ -130,7 +130,7 @@ svg.addEventListener('mousedown', e => {
         svg.appendChild(pen.node)
         break
       case 'rect':
-        pen.node = creatSVGElt('rect', {
+        pen.node = createSVGElt('rect', {
           x: pen.XY.x,
           y: pen.XY.y,
           width: 0,
@@ -143,7 +143,7 @@ svg.addEventListener('mousedown', e => {
         svg.appendChild(pen.node)
         break
       case 'oval':
-        pen.node = creatSVGElt('ellipse', {
+        pen.node = createSVGElt('ellipse', {
           cx: pen.XY.x,
           cy: pen.XY.y,
           rx: 0,
@@ -164,8 +164,8 @@ svg.addEventListener('mousedown', e => {
     if (pen.node) svg.removeChild(pen.node)
     pen.node = null
     pen.drawed = svg.children.length > 0
+    info.style.display = svg.children.length > 0 ? 'none' : ''
     window.removeEventListener('mousemove', onMouseMove)
-
   }
 })
 window.addEventListener('mouseup', () => {
@@ -273,7 +273,7 @@ function drawOval(x, y) {
   svg.appendChild(pen.node)
 }
 
-function creatSVGElt(tagName, attrs = {}, ...children) {
+function createSVGElt(tagName, attrs = {}, ...children) {
   let node = document.createElementNS('http://www.w3.org/2000/svg', tagName)
 
   for (let key in attrs) {
