@@ -16,6 +16,8 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+
+  overflow: hidden;
 }
 
 #toolsBar {
@@ -28,7 +30,6 @@ body {
   justify-content: center;
   align-items: center;
 }
-
 ul {
   list-style: none;
   display: flex;
